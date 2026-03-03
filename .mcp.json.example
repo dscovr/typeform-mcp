@@ -9,7 +9,7 @@
         "typeform-mcp"
       ],
       "env": {
-        "TYPEFORM_TOKEN": "tfp_IL_TUO_TOKEN_PERSONALE"
+        "TYPEFORM_TOKEN": "tfp_YOUR_PERSONAL_TOKEN"
       }
     }
   }

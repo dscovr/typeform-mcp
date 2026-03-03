@@ -1,30 +1,24 @@
 # typeform-mcp
 
-MCP server per le API Typeform. Espone le principali operazioni Typeform come strumenti MCP utilizzabili da qualsiasi client compatibile con il Model Context Protocol.
+MCP server for the Typeform API. Exposes Typeform operations as MCP tools usable from any client that supports the Model Context Protocol.
 
-## Requisiti
+## Requirements
 
 - Python 3.12+
-- [uv](https://docs.astral.sh/uv/) installato (`pip install uv` oppure `brew install uv`)
-- Un [Personal Access Token](https://www.typeform.com/developers/get-started/personal-access-token/) Typeform
+- [uv](https://docs.astral.sh/uv/) installed (`pip install uv` or `brew install uv`)
+- A Typeform [Personal Access Token](https://www.typeform.com/developers/get-started/personal-access-token/)
 
-## Installazione rapida
+## Quick install
 
-Il modo piu semplice per usare il server senza clonare il repo:
-
-```bash
-uvx --from git+https://github.com/dscovr/typeform-mcp typeform-mcp
-```
-
-Il token deve essere passato tramite variabile d'ambiente:
+The easiest way to use the server without cloning the repo:
 
 ```bash
 TYPEFORM_TOKEN=tfp_... uvx --from git+https://github.com/dscovr/typeform-mcp typeform-mcp
 ```
 
-## Configurazione MCP
+## MCP configuration
 
-Copia `.mcp.json.example` in `.mcp.json` nella root del tuo progetto e inserisci il tuo token:
+Copy `.mcp.json.example` to `.mcp.json` in the root of your project and fill in your token:
 
 ```json
 {
@@ -38,33 +32,33 @@ Copia `.mcp.json.example` in `.mcp.json` nella root del tuo progetto e inserisci
         "typeform-mcp"
       ],
       "env": {
-        "TYPEFORM_TOKEN": "tfp_IL_TUO_TOKEN_PERSONALE"
+        "TYPEFORM_TOKEN": "tfp_YOUR_PERSONAL_TOKEN"
       }
     }
   }
 }
 ```
 
-**Attenzione:** `.mcp.json` e incluso nel `.gitignore` perche contiene il token in chiaro. Non committarlo mai.
+**Note:** `.mcp.json` is listed in `.gitignore` because it contains your token in plain text. Never commit it.
 
-## Sviluppo locale
+## Local development
 
 ```bash
-# Clona il repo
+# Clone the repo
 git clone https://github.com/dscovr/typeform-mcp
 cd typeform-mcp
 
-# Installa le dipendenze
+# Install dependencies
 uv sync --group dev
 
-# Esegui i test
+# Run tests
 uv run pytest
 
-# Avvia il server in locale (per test)
+# Start the server locally
 TYPEFORM_TOKEN=tfp_... uv run python -m typeform.server
 ```
 
-Per usare la versione locale come server MCP, aggiorna `.mcp.json`:
+To use a local build as your MCP server, update `.mcp.json`:
 
 ```json
 {
@@ -72,98 +66,100 @@ Per usare la versione locale come server MCP, aggiorna `.mcp.json`:
     "typeform": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["--from", "/percorso/assoluto/typeform-mcp", "typeform-mcp"],
+      "args": ["--from", "/absolute/path/to/typeform-mcp", "typeform-mcp"],
       "env": {
-        "TYPEFORM_TOKEN": "tfp_IL_TUO_TOKEN_PERSONALE"
+        "TYPEFORM_TOKEN": "tfp_YOUR_PERSONAL_TOKEN"
       }
     }
   }
 }
 ```
 
-## Strumenti disponibili
+## Available tools
 
-### Form
-| Strumento | Descrizione |
-|-----------|-------------|
-| `typeform_list_forms` | Elenca tutti i form dell'account |
-| `typeform_get_form` | Recupera un form per ID |
-| `typeform_create_form` | Crea un nuovo form |
-| `typeform_update_form` | Sostituisce un form (PUT) |
-| `typeform_patch_form` | Aggiorna campi specifici di un form (PATCH) |
-| `typeform_delete_form` | Elimina un form |
-| `typeform_duplicate_form` | Duplica un form esistente |
-| `typeform_get_messages` | Recupera i messaggi personalizzati di un form |
-| `typeform_update_messages` | Aggiorna i messaggi personalizzati di un form |
+### Forms
+| Tool | Description |
+|------|-------------|
+| `typeform_list_forms` | List all forms in the account |
+| `typeform_get_form` | Get a form by ID |
+| `typeform_create_form` | Create a new form |
+| `typeform_update_form` | Replace a form (PUT) |
+| `typeform_patch_form` | Partially update a form (PATCH) |
+| `typeform_delete_form` | Delete a form |
+| `typeform_duplicate_form` | Duplicate an existing form |
+| `typeform_get_messages` | Get custom messages for a form |
+| `typeform_update_messages` | Update custom messages for a form |
 
-### Risposte
-| Strumento | Descrizione |
-|-----------|-------------|
-| `typeform_list_responses` | Elenca le risposte a un form |
-| `typeform_delete_responses` | Elimina risposte specifiche |
-| `typeform_download_file` | Scarica un file allegato a una risposta |
+### Responses
+| Tool | Description |
+|------|-------------|
+| `typeform_list_responses` | List responses for a form |
+| `typeform_export_responses_csv` | Export all responses as CSV |
+| `typeform_delete_responses` | Delete specific responses |
+| `typeform_download_file` | Download a file attached to a response |
 
-### Webhook
-| Strumento | Descrizione |
-|-----------|-------------|
-| `typeform_list_webhooks` | Elenca i webhook di un form |
-| `typeform_get_webhook` | Recupera un webhook specifico |
-| `typeform_upsert_webhook` | Crea o aggiorna un webhook |
-| `typeform_delete_webhook` | Elimina un webhook |
+### Webhooks
+| Tool | Description |
+|------|-------------|
+| `typeform_list_webhooks` | List webhooks for a form |
+| `typeform_get_webhook` | Get a specific webhook |
+| `typeform_upsert_webhook` | Create or update a webhook |
+| `typeform_delete_webhook` | Delete a webhook |
 
-### Temi
-| Strumento | Descrizione |
-|-----------|-------------|
-| `typeform_list_themes` | Elenca i temi disponibili |
-| `typeform_get_theme` | Recupera un tema per ID |
-| `typeform_create_theme` | Crea un nuovo tema |
-| `typeform_update_theme` | Aggiorna un tema (PUT) |
-| `typeform_patch_theme` | Aggiorna campi specifici di un tema (PATCH) |
-| `typeform_delete_theme` | Elimina un tema |
+### Themes
+| Tool | Description |
+|------|-------------|
+| `typeform_list_themes` | List available themes |
+| `typeform_get_theme` | Get a theme by ID |
+| `typeform_create_theme` | Create a new theme |
+| `typeform_update_theme` | Replace a theme (PUT) |
+| `typeform_patch_theme` | Partially update a theme (PATCH) |
+| `typeform_delete_theme` | Delete a theme |
 
-### Immagini
-| Strumento | Descrizione |
-|-----------|-------------|
-| `typeform_list_images` | Elenca le immagini caricate |
-| `typeform_get_image` | Recupera un'immagine per ID |
-| `typeform_create_image` | Carica una nuova immagine (base64) |
-| `typeform_delete_image` | Elimina un'immagine |
+### Images
+| Tool | Description |
+|------|-------------|
+| `typeform_list_images` | List uploaded images |
+| `typeform_get_image` | Get an image by ID |
+| `typeform_create_image` | Upload a new image (base64) |
+| `typeform_delete_image` | Delete an image |
 
-### Workspace
-| Strumento | Descrizione |
-|-----------|-------------|
-| `typeform_list_workspaces` | Elenca i workspace |
-| `typeform_get_workspace` | Recupera un workspace per ID |
-| `typeform_create_workspace` | Crea un nuovo workspace |
-| `typeform_update_workspace` | Aggiorna un workspace |
-| `typeform_delete_workspace` | Elimina un workspace |
+### Workspaces
+| Tool | Description |
+|------|-------------|
+| `typeform_list_workspaces` | List workspaces |
+| `typeform_get_workspace` | Get a workspace by ID |
+| `typeform_create_workspace` | Create a new workspace |
+| `typeform_update_workspace` | Rename a workspace |
+| `typeform_delete_workspace` | Delete a workspace |
 
-### Traduzioni
-| Strumento | Descrizione |
-|-----------|-------------|
-| `typeform_list_translations` | Elenca le traduzioni di un form |
-| `typeform_update_translation` | Aggiorna una traduzione |
-| `typeform_delete_translation` | Elimina una traduzione |
-| `typeform_auto_translate` | Attiva la traduzione automatica |
+### Translations
+| Tool | Description |
+|------|-------------|
+| `typeform_list_translations` | List translations for a form |
+| `typeform_get_translation_statuses` | Get translation statuses |
+| `typeform_update_translation` | Update a translation |
+| `typeform_delete_translation` | Delete a translation |
+| `typeform_auto_translate` | Trigger automatic translation |
 
 ### Account
-| Strumento | Descrizione |
-|-----------|-------------|
-| `typeform_get_account` | Recupera il profilo dell'account corrente |
+| Tool | Description |
+|------|-------------|
+| `typeform_get_account` | Get the current account profile |
 
-## Struttura del progetto
+## Project structure
 
 ```
 src/typeform/
-    __init__.py     # Export dei tipi principali
-    models.py       # Modelli Pydantic per form, campi, logic, ecc.
-    client.py       # Client HTTP per le API Typeform
-    server.py       # MCP server (entry point)
+    __init__.py     # Public type exports
+    models.py       # Pydantic models for forms, fields, logic, etc.
+    client.py       # HTTP client for the Typeform API
+    server.py       # MCP server entry point
 tests/
-    test_client.py  # Test unitari per il client
-    test_models.py  # Test unitari per i modelli
+    test_client.py  # Unit tests for the client
+    test_models.py  # Unit tests for the models
 ```
 
-## Licenza
+## License
 
 MIT
