@@ -17,7 +17,9 @@ Installazione da GitHub:
 from __future__ import annotations
 
 import base64
+import csv
 import functools
+import io
 import json
 import logging
 import os
@@ -393,6 +395,74 @@ def typeform_list_responses(
         "page_count": result.page_count,
         "items": items,
     })
+
+
+@mcp.tool()
+@_tool
+def typeform_export_responses_csv(
+    form_id: str,
+    since: str = "",
+    until: str = "",
+    sort: str = "submitted_at,asc",
+) -> str:
+    """
+    Esporta tutte le risposte di un form in formato CSV.
+    Gestisce la paginazione automaticamente e raccoglie fino a 10.000 risposte.
+
+    Args:
+        form_id: ID del form.
+        since:   Filtra risposte dopo questa data (ISO 8601, es. "2026-01-01T00:00:00Z").
+        until:   Filtra risposte prima di questa data (ISO 8601).
+        sort:    Ordinamento: "submitted_at,asc" (default) o "submitted_at,desc".
+
+    Returns:
+        Testo CSV con header nella prima riga.
+    """
+    all_items = []
+    after: str | None = None
+    max_responses = 10_000
+
+    while len(all_items) < max_responses:
+        result = _client().list_responses(
+            form_id,
+            page_size=1000,
+            since=since or None,
+            until=until or None,
+            sort=sort,
+            after=after,
+        )
+        all_items.extend(result.items)
+        if len(result.items) < 1000 or len(all_items) >= result.total_items:
+            break
+        after = result.items[-1].response_id
+
+    if not all_items:
+        return "response_id,submitted_at\n"
+
+    # Collect all answer keys across all responses
+    all_keys: list[str] = []
+    seen: set[str] = set()
+    for r in all_items:
+        for k in r.answers_by_ref():
+            if k not in seen:
+                all_keys.append(k)
+                seen.add(k)
+
+    header = ["response_id", "submitted_at", "landed_at"] + all_keys
+
+    buf = io.StringIO()
+    writer = csv.writer(buf, lineterminator="\n")
+    writer.writerow(header)
+    for r in all_items:
+        answers = r.answers_by_ref()
+        row = [
+            r.response_id,
+            r.submitted_at or "",
+            r.landed_at or "",
+        ] + [answers.get(k, "") for k in all_keys]
+        writer.writerow(row)
+
+    return buf.getvalue()
 
 
 @mcp.tool()
