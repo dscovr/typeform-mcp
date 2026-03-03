@@ -68,7 +68,7 @@ def test_matrix_row_column():
 
 def test_multiple_choice_properties_defaults():
     props = MultipleChoiceProperties(choices=[Choice(ref="a", label="A")])
-    # allow_other_choice è None di default (non inviato all'API se non esplicitato)
+    # allow_other_choice is None by default (not sent to the API unless explicitly set)
     assert props.allow_other_choice is None
 
 
@@ -104,7 +104,7 @@ def test_matrix_properties():
 
 def test_statement_properties_defaults():
     props = StatementProperties()
-    assert props.button_text == "Continua"
+    assert props.button_text == "Continue"
     assert props.hide_marks is True
 
 
@@ -188,32 +188,32 @@ def test_survey_field_opinion_scale_serialization():
 def test_screen_properties_defaults():
     sp = ScreenProperties()
     assert sp.show_button is True
-    assert sp.button_text == "Avanti"
+    assert sp.button_text == "Next"
 
 
 def test_welcome_screen():
-    ws = WelcomeScreen(ref="welcome", title="Benvenuto!")
+    ws = WelcomeScreen(ref="welcome", title="Welcome!")
     assert ws.ref == "welcome"
     assert ws.properties.show_button is True
 
 
 def test_thankyou_screen_default_properties():
-    ts = ThankyouScreen(ref="end", title="Grazie!")
-    # ThankyouScreenProperties ha tutti None di default (nessun valore inviato all'API)
+    ts = ThankyouScreen(ref="end", title="Thank you!")
+    # ThankyouScreenProperties has all None by default (no value sent to the API)
     assert ts.properties.show_button is None
     assert ts.properties.redirect_url is None
     assert ts.type is None
 
 
 def test_thankyou_screen_custom_button():
-    ts = ThankyouScreen(ref="end", title="Grazie!", properties=ThankyouScreenProperties(show_button=True))
+    ts = ThankyouScreen(ref="end", title="Thank you!", properties=ThankyouScreenProperties(show_button=True))
     assert ts.properties.show_button is True
 
 
 def test_thankyou_screen_redirect():
     ts = ThankyouScreen(
         ref="end",
-        title="Grazie!",
+        title="Thank you!",
         type="url_redirect",
         properties=ThankyouScreenProperties(redirect_url="https://example.com/cb"),
     )
@@ -282,7 +282,7 @@ def test_logic_rule():
 
 def test_form_defaults():
     form = Form(title="My Form")
-    # language=None di default: non viene inviato all'API (non accettato da POST /forms)
+    # language=None by default: not sent to the API (not accepted by POST /forms)
     assert form.language is None
     assert form.hidden == []
     assert form.variables is None
@@ -302,13 +302,13 @@ def test_form_hidden_fields_and_variables():
 def test_form_hidden_excluded_when_empty():
     form = Form(title="F")
     payload = form.to_api()
-    # lista vuota → exclude_none non rimuove le liste vuote, ma hidden=[] è serializzato
-    # verifichiamo che variables (None) sia escluso
+    # empty list → exclude_none does not remove empty lists, but hidden=[] is serialized
+    # verify that variables (None) is excluded
     assert "variables" not in payload
 
 
 def test_form_to_api_excludes_language_when_none():
-    """language=None viene escluso da to_api() grazie a exclude_none=True."""
+    """language=None is excluded from to_api() thanks to exclude_none=True."""
     form = Form(title="Empty")
     payload = form.to_api()
     assert payload["title"] == "Empty"

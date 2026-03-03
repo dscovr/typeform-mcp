@@ -1,7 +1,7 @@
 """
-Typeform API — client HTTP full-featured.
+Typeform API — full-featured HTTP client.
 
-Copre tutti gli endpoint pubblici:
+Covers all public endpoints:
   - Account       GET /me
   - Forms         CRUD + messages + patch
   - Themes        CRUD + patch
@@ -47,12 +47,12 @@ TYPEFORM_API_URL = "https://api.typeform.com"
 
 
 # ---------------------------------------------------------------------------
-# Eccezione dedicata
+# Exception
 # ---------------------------------------------------------------------------
 
 
 class TypeformAPIError(Exception):
-    """Eccezione sollevata per risposte HTTP non 2xx dall'API Typeform."""
+    """Raised for non-2xx HTTP responses from the Typeform API."""
 
     def __init__(
         self,
@@ -75,11 +75,11 @@ class TypeformAPIError(Exception):
 
 class TypeformClient:
     """
-    Client completo per le API Typeform.
+    Full-featured client for the Typeform API.
 
-    Uso:
+    Usage:
         client = TypeformClient(token="tfp_...")
-        # oppure con variabile d'ambiente TYPEFORM_TOKEN
+        # or using the TYPEFORM_TOKEN environment variable
         client = TypeformClient()
     """
 
@@ -89,7 +89,7 @@ class TypeformClient:
         self._session = requests.Session()
 
     # ------------------------------------------------------------------
-    # Metodi interni
+    # Internal methods
     # ------------------------------------------------------------------
 
     def _headers(self, content_type: str | None = "application/json") -> dict:
@@ -109,7 +109,7 @@ class TypeformClient:
         content_type: str | None = "application/json",
         _retries: int = 3,
     ) -> requests.Response:
-        """Esegue la richiesta HTTP con retry su 429/503 e solleva TypeformAPIError in caso di errore."""
+        """Executes the HTTP request with retry on 429/503 and raises TypeformAPIError on error."""
         url = f"{TYPEFORM_API_URL}{path}"
         for attempt in range(_retries + 1):
             resp = self._session.request(
@@ -144,7 +144,7 @@ class TypeformClient:
                     details=body.get("details"),
                 )
             return resp
-        # Irraggiungibile: l'ultimo tentativo o ritorna o solleva
+        # Unreachable: the last attempt either returns or raises
         raise TypeformAPIError(status_code=0, code="MAX_RETRIES", description="Max retries exceeded")
 
     # ==================================================================
@@ -152,7 +152,7 @@ class TypeformClient:
     # ==================================================================
 
     def get_me(self) -> Account:
-        """GET /me — informazioni sull'account corrente."""
+        """GET /me — current account information."""
         resp = self._request("GET", "/me")
         return Account.model_validate(resp.json())
 
@@ -168,7 +168,7 @@ class TypeformClient:
         search: str | None = None,
         workspace_id: str | None = None,
     ) -> FormList:
-        """GET /forms — lista dei form con paginazione e ricerca opzionale."""
+        """GET /forms — list forms with pagination and optional search."""
         resp = self._request(
             "GET",
             "/forms",
@@ -182,53 +182,53 @@ class TypeformClient:
         return FormList.model_validate(resp.json())
 
     def create_form(self, form: Form) -> dict:
-        """POST /forms — crea un nuovo form da oggetto Form (validato da Pydantic)."""
+        """POST /forms — create a new form from a Form object (Pydantic-validated)."""
         resp = self._request("POST", "/forms", json=form.to_api())
         return resp.json()
 
     def create_form_raw(self, form_definition: dict) -> dict:
-        """POST /forms — crea un nuovo form da payload grezzo (dict)."""
+        """POST /forms — create a new form from a raw payload (dict)."""
         resp = self._request("POST", "/forms", json=form_definition)
         return resp.json()
 
     def get_form(self, form_id: str) -> dict:
-        """GET /forms/{form_id} — recupera la definizione completa di un form."""
+        """GET /forms/{form_id} — retrieve the full form definition."""
         resp = self._request("GET", f"/forms/{form_id}")
         return resp.json()
 
     def update_form(self, form_id: str, form: Form) -> dict:
-        """PUT /forms/{form_id} — sostituisce il form da oggetto Form (validato da Pydantic)."""
+        """PUT /forms/{form_id} — replace the form from a Form object (Pydantic-validated)."""
         resp = self._request("PUT", f"/forms/{form_id}", json=form.to_api())
         return resp.json()
 
     def update_form_raw(self, form_id: str, form_definition: dict) -> dict:
-        """PUT /forms/{form_id} — sostituisce il form da payload grezzo (dict)."""
+        """PUT /forms/{form_id} — replace the form from a raw payload (dict)."""
         resp = self._request("PUT", f"/forms/{form_id}", json=form_definition)
         return resp.json()
 
     def patch_form(self, form_id: str, patch: dict) -> dict:
-        """PATCH /forms/{form_id} — aggiorna parzialmente un form."""
+        """PATCH /forms/{form_id} — partially update a form."""
         resp = self._request("PATCH", f"/forms/{form_id}", json=patch)
         return resp.json()
 
     def delete_form(self, form_id: str) -> None:
-        """DELETE /forms/{form_id} — elimina un form."""
+        """DELETE /forms/{form_id} — delete a form."""
         self._request("DELETE", f"/forms/{form_id}")
 
     def duplicate_form(self, form_id: str) -> dict:
-        """POST /forms/{form_id}/duplicate — duplica un form esistente."""
+        """POST /forms/{form_id}/duplicate — duplicate an existing form."""
         resp = self._request("POST", f"/forms/{form_id}/duplicate")
         return resp.json()
 
     def get_form_messages(self, form_id: str) -> dict[str, str]:
-        """GET /forms/{form_id}/messages — messaggi personalizzati del form."""
+        """GET /forms/{form_id}/messages — custom messages for the form."""
         resp = self._request("GET", f"/forms/{form_id}/messages")
         return resp.json()
 
     def update_form_messages(
         self, form_id: str, messages: dict[str, str]
     ) -> dict[str, str]:
-        """PUT /forms/{form_id}/messages — aggiorna i messaggi personalizzati."""
+        """PUT /forms/{form_id}/messages — update custom messages."""
         resp = self._request(
             "PUT", f"/forms/{form_id}/messages", json=messages
         )
@@ -241,34 +241,34 @@ class TypeformClient:
     def list_themes(
         self, *, page: int = 1, page_size: int = 10
     ) -> ThemeList:
-        """GET /themes — lista dei temi."""
+        """GET /themes — list themes."""
         resp = self._request(
             "GET", "/themes", params={"page": page, "page_size": page_size}
         )
         return ThemeList.model_validate(resp.json())
 
     def create_theme(self, theme: ThemeCreate) -> Theme:
-        """POST /themes — crea un nuovo tema."""
+        """POST /themes — create a new theme."""
         resp = self._request("POST", "/themes", json=theme.to_api())
         return Theme.model_validate(resp.json())
 
     def get_theme(self, theme_id: str) -> Theme:
-        """GET /themes/{theme_id} — recupera un tema."""
+        """GET /themes/{theme_id} — retrieve a theme."""
         resp = self._request("GET", f"/themes/{theme_id}")
         return Theme.model_validate(resp.json())
 
     def update_theme(self, theme_id: str, theme: ThemeCreate) -> Theme:
-        """PUT /themes/{theme_id} — sostituisce un tema."""
+        """PUT /themes/{theme_id} — replace a theme."""
         resp = self._request("PUT", f"/themes/{theme_id}", json=theme.to_api())
         return Theme.model_validate(resp.json())
 
     def patch_theme(self, theme_id: str, patch: dict) -> Theme:
-        """PATCH /themes/{theme_id} — aggiorna parzialmente un tema."""
+        """PATCH /themes/{theme_id} — partially update a theme."""
         resp = self._request("PATCH", f"/themes/{theme_id}", json=patch)
         return Theme.model_validate(resp.json())
 
     def delete_theme(self, theme_id: str) -> None:
-        """DELETE /themes/{theme_id} — elimina un tema."""
+        """DELETE /themes/{theme_id} — delete a theme."""
         self._request("DELETE", f"/themes/{theme_id}")
 
     # ==================================================================
@@ -276,26 +276,26 @@ class TypeformClient:
     # ==================================================================
 
     def list_images(self) -> ImageList:
-        """GET /images — lista delle immagini caricate."""
+        """GET /images — list uploaded images."""
         resp = self._request("GET", "/images")
         return ImageList.model_validate(resp.json())
 
     def create_image(self, image: ImageCreate) -> Image:
-        """POST /images — carica una nuova immagine (base64)."""
+        """POST /images — upload a new image (base64)."""
         resp = self._request("POST", "/images", json=image.to_api())
         return Image.model_validate(resp.json())
 
     def get_image(self, image_id: str) -> Image:
-        """GET /images/{image_id} — recupera metadati di un'immagine."""
+        """GET /images/{image_id} — retrieve image metadata."""
         resp = self._request("GET", f"/images/{image_id}")
         return Image.model_validate(resp.json())
 
     def delete_image(self, image_id: str) -> None:
-        """DELETE /images/{image_id} — elimina un'immagine."""
+        """DELETE /images/{image_id} — delete an image."""
         self._request("DELETE", f"/images/{image_id}")
 
     def download_image(self, image_id: str, size: str = "default") -> bytes:
-        """GET /images/{image_id}/download — scarica il file immagine."""
+        """GET /images/{image_id}/download — download the image file."""
         resp = self._request(
             "GET",
             f"/images/{image_id}/download",
@@ -315,7 +315,7 @@ class TypeformClient:
         page_size: int = 10,
         search: str | None = None,
     ) -> WorkspaceList:
-        """GET /workspaces — lista dei workspace."""
+        """GET /workspaces — list workspaces."""
         resp = self._request(
             "GET",
             "/workspaces",
@@ -324,24 +324,24 @@ class TypeformClient:
         return WorkspaceList.model_validate(resp.json())
 
     def create_workspace(self, name: str) -> Workspace:
-        """POST /workspaces — crea un workspace."""
+        """POST /workspaces — create a workspace."""
         resp = self._request("POST", "/workspaces", json={"name": name})
         return Workspace.model_validate(resp.json())
 
     def get_workspace(self, workspace_id: str) -> Workspace:
-        """GET /workspaces/{workspace_id} — recupera un workspace."""
+        """GET /workspaces/{workspace_id} — retrieve a workspace."""
         resp = self._request("GET", f"/workspaces/{workspace_id}")
         return Workspace.model_validate(resp.json())
 
     def update_workspace(self, workspace_id: str, name: str) -> Workspace:
-        """PATCH /workspaces/{workspace_id} — aggiorna il nome del workspace."""
+        """PATCH /workspaces/{workspace_id} — rename a workspace."""
         resp = self._request(
             "PATCH", f"/workspaces/{workspace_id}", json={"name": name}
         )
         return Workspace.model_validate(resp.json())
 
     def delete_workspace(self, workspace_id: str) -> None:
-        """DELETE /workspaces/{workspace_id} — elimina un workspace."""
+        """DELETE /workspaces/{workspace_id} — delete a workspace."""
         self._request("DELETE", f"/workspaces/{workspace_id}")
 
     # ==================================================================
@@ -363,17 +363,17 @@ class TypeformClient:
         response_type: str | None = None,
     ) -> ResponseList:
         """
-        GET /forms/{form_id}/responses — recupera le risposte con filtri.
+        GET /forms/{form_id}/responses — retrieve responses with filters.
 
         Args:
             page_size:      max 1000.
-            after:          token per cursore (paginazione forward).
-            before:         token per cursore (paginazione backward).
-            since:          ISO 8601 — risposte dopo questa data.
-            until:          ISO 8601 — risposte prima di questa data.
-            query:          testo libero per filtrare le risposte.
-            fields:         lista di ref dei campi da includere.
-            sort:           es. "submitted_at,desc".
+            after:          cursor token (forward pagination).
+            before:         cursor token (backward pagination).
+            since:          ISO 8601 — responses after this date.
+            until:          ISO 8601 — responses before this date.
+            query:          free-text filter.
+            fields:         list of field refs to include.
+            sort:           e.g. "submitted_at,desc".
             response_type:  "completed" | "landed".
         """
         resp = self._request(
@@ -397,10 +397,10 @@ class TypeformClient:
         self, form_id: str, included_tokens: list[str]
     ) -> None:
         """
-        DELETE /forms/{form_id}/responses — elimina risposte per token.
+        DELETE /forms/{form_id}/responses — delete responses by token.
 
         Args:
-            included_tokens: lista dei token (response_id) da eliminare.
+            included_tokens: list of tokens (response_id) to delete.
         """
         self._request(
             "DELETE",
@@ -418,10 +418,10 @@ class TypeformClient:
     ) -> bytes:
         """
         GET /forms/{form_id}/responses/{response_id}/fields/{field_id}/files/{filename}
-        — scarica un file allegato a una risposta.
+        — download a file attached to a response.
 
         Args:
-            max_bytes: Limite massimo in byte (default 10 MB). Solleva ValueError se superato.
+            max_bytes: Maximum size in bytes (default 10 MB). Raises ValueError if exceeded.
         """
         resp = self._request(
             "GET",
@@ -430,19 +430,19 @@ class TypeformClient:
         )
         if len(resp.content) > max_bytes:
             raise ValueError(
-                f"File troppo grande: {len(resp.content)} byte (limite {max_bytes} byte)"
+                f"File too large: {len(resp.content)} bytes (limit {max_bytes} bytes)"
             )
         return resp.content
 
     def request_audio_master(self, form_id: str) -> dict:
-        """POST /forms/{form_id}/responses/audio/master — richiede generazione master audio."""
+        """POST /forms/{form_id}/responses/audio/master — request audio master generation."""
         resp = self._request(
             "POST", f"/forms/{form_id}/responses/audio/master"
         )
         return resp.json()
 
     def get_audio_master(self, form_id: str, master_id: str) -> bytes:
-        """GET /forms/{form_id}/responses/audio/master/{master_id} — scarica master audio."""
+        """GET /forms/{form_id}/responses/audio/master/{master_id} — download audio master."""
         resp = self._request(
             "GET",
             f"/forms/{form_id}/responses/audio/master/{master_id}",
@@ -451,14 +451,14 @@ class TypeformClient:
         return resp.content
 
     def request_video_master(self, form_id: str) -> dict:
-        """POST /forms/{form_id}/responses/video/master — richiede generazione master video."""
+        """POST /forms/{form_id}/responses/video/master — request video master generation."""
         resp = self._request(
             "POST", f"/forms/{form_id}/responses/video/master"
         )
         return resp.json()
 
     def get_video_master(self, form_id: str, master_id: str) -> bytes:
-        """GET /forms/{form_id}/responses/video/master/{master_id} — scarica master video."""
+        """GET /forms/{form_id}/responses/video/master/{master_id} — download video master."""
         resp = self._request(
             "GET",
             f"/forms/{form_id}/responses/video/master/{master_id}",
@@ -471,12 +471,12 @@ class TypeformClient:
     # ==================================================================
 
     def list_webhooks(self, form_id: str) -> WebhookList:
-        """GET /forms/{form_id}/webhooks — lista webhook del form."""
+        """GET /forms/{form_id}/webhooks — list webhooks for the form."""
         resp = self._request("GET", f"/forms/{form_id}/webhooks")
         return WebhookList.model_validate(resp.json())
 
     def get_webhook(self, form_id: str, tag: str) -> Webhook:
-        """GET /forms/{form_id}/webhooks/{tag} — recupera un webhook."""
+        """GET /forms/{form_id}/webhooks/{tag} — retrieve a webhook."""
         resp = self._request("GET", f"/forms/{form_id}/webhooks/{tag}")
         return Webhook.model_validate(resp.json())
 
@@ -484,8 +484,8 @@ class TypeformClient:
         self, form_id: str, tag: str, webhook: WebhookUpsert
     ) -> Webhook:
         """
-        PUT /forms/{form_id}/webhooks/{tag} — crea o aggiorna un webhook.
-        Il tag identifica univocamente il webhook nel form.
+        PUT /forms/{form_id}/webhooks/{tag} — create or update a webhook.
+        The tag uniquely identifies the webhook within the form.
         """
         resp = self._request(
             "PUT",
@@ -495,7 +495,7 @@ class TypeformClient:
         return Webhook.model_validate(resp.json())
 
     def delete_webhook(self, form_id: str, tag: str) -> None:
-        """DELETE /forms/{form_id}/webhooks/{tag} — elimina un webhook."""
+        """DELETE /forms/{form_id}/webhooks/{tag} — delete a webhook."""
         self._request("DELETE", f"/forms/{form_id}/webhooks/{tag}")
 
     # ==================================================================
@@ -503,14 +503,14 @@ class TypeformClient:
     # ==================================================================
 
     def list_translations(self, form_id: str) -> list[dict]:
-        """GET /forms/{form_id}/translations — payload di tutte le traduzioni."""
+        """GET /forms/{form_id}/translations — all translation payloads."""
         resp = self._request("GET", f"/forms/{form_id}/translations")
         return resp.json()
 
     def get_translation_statuses(
         self, form_id: str
     ) -> list[TranslationStatus]:
-        """GET /forms/{form_id}/translations/statuses — stato di ogni traduzione."""
+        """GET /forms/{form_id}/translations/statuses — status of each translation."""
         resp = self._request(
             "GET", f"/forms/{form_id}/translations/statuses"
         )
@@ -519,7 +519,7 @@ class TypeformClient:
     def update_translation(
         self, form_id: str, language: str, payload: dict
     ) -> dict:
-        """PUT /forms/{form_id}/translations/{language} — aggiorna una traduzione."""
+        """PUT /forms/{form_id}/translations/{language} — update a translation."""
         resp = self._request(
             "PUT",
             f"/forms/{form_id}/translations/{language}",
@@ -528,13 +528,13 @@ class TypeformClient:
         return resp.json()
 
     def delete_translation(self, form_id: str, language: str) -> None:
-        """DELETE /forms/{form_id}/translations/{language} — elimina una traduzione."""
+        """DELETE /forms/{form_id}/translations/{language} — delete a translation."""
         self._request("DELETE", f"/forms/{form_id}/translations/{language}")
 
     def auto_translate(
         self, form_id: str, target_languages: list[str]
     ) -> dict:
-        """POST /forms/{form_id}/translations/auto — traduzione automatica."""
+        """POST /forms/{form_id}/translations/auto — automatic translation."""
         resp = self._request(
             "POST",
             f"/forms/{form_id}/translations/auto",
@@ -549,7 +549,7 @@ class TypeformClient:
 
 
 def _clean_params(params: dict | None) -> dict | None:
-    """Rimuove le chiavi con valore None da un dict di query params."""
+    """Removes None-valued keys from a query params dict."""
     if params is None:
         return None
     return {k: v for k, v in params.items() if v is not None}

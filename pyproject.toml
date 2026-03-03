@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "typeform-mcp"
 version = "0.1.0"
-description = "MCP server per le API Typeform — integrazione con Claude Code"
+description = "MCP server for the Typeform API"
 requires-python = ">=3.12"
 dependencies = [
     "mcp>=1.26.0",

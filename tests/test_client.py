@@ -24,7 +24,7 @@ def _simple_form() -> Form:
         fields=[
             SurveyField(
                 ref="q1",
-                title="Ruolo?",
+                title="Role?",
                 type=FieldType.multiple_choice,
                 properties=MultipleChoiceProperties(
                     choices=[Choice(ref="q1_a", label="A"), Choice(ref="q1_b", label="B")]
@@ -35,7 +35,7 @@ def _simple_form() -> Form:
 
 
 def _mock_response(status_code: int, body: dict | None = None) -> MagicMock:
-    """Crea un mock di requests.Response compatibile con il nuovo client."""
+    """Creates a mock requests.Response compatible with the client."""
     mock = MagicMock()
     mock.status_code = status_code
     mock.ok = status_code < 400
@@ -46,7 +46,7 @@ def _mock_response(status_code: int, body: dict | None = None) -> MagicMock:
 
 
 def _patch_session(client: TypeformClient, response: MagicMock):
-    """Rimpiazza session.request con un mock che restituisce response."""
+    """Replaces session.request with a mock that returns the given response."""
     client._session.request = MagicMock(return_value=response)
     return client._session.request
 
@@ -243,7 +243,7 @@ def test_get_form_messages_success():
 
 def test_update_form_messages_success():
     client = _make_client()
-    messages = {"label.buttonHint.default": "Vai avanti"}
+    messages = {"label.buttonHint.default": "Go ahead"}
     mock = _patch_session(client, _mock_response(200, messages))
 
     result = client.update_form_messages("form123", messages)
@@ -443,7 +443,7 @@ def test_request_passes_timeout_to_session():
 
 
 # ---------------------------------------------------------------------------
-# Retry su 429 / 503
+# Retry on 429 / 503
 # ---------------------------------------------------------------------------
 
 
@@ -472,7 +472,7 @@ def test_retry_on_503_exhausted_raises():
             client.get_me()
 
     assert exc_info.value.status_code == 503
-    assert client._session.request.call_count == 4  # 1 tentativo + 3 retry
+    assert client._session.request.call_count == 4  # 1 attempt + 3 retries
 
 
 # ---------------------------------------------------------------------------
@@ -487,7 +487,7 @@ def test_download_response_files_size_limit():
     mock_resp.content = big_content
     _patch_session(client, mock_resp)
 
-    with pytest.raises(ValueError, match="troppo grande"):
+    with pytest.raises(ValueError, match="too large"):
         client.download_response_files("f", "r", "fid", "file.pdf", max_bytes=10 * 1024 * 1024)
 
 

@@ -1,10 +1,10 @@
 """
-Typeform API — modelli Pydantic.
+Typeform API — Pydantic models.
 
-Suddivisi in:
-  - Modelli per la costruzione di form (Form, SurveyField, logic, …)
-  - Modelli di risposta per tutte le risorse (Account, Theme, Image,
-    Workspace, Response, Webhook, Translation, …)
+Organized into:
+  - Form building models (Form, SurveyField, logic, ...)
+  - API response models for all resources (Account, Theme, Image,
+    Workspace, Response, Webhook, Translation, ...)
 """
 
 from __future__ import annotations
@@ -16,15 +16,15 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 # ---------------------------------------------------------------------------
-# Shared config per i modelli di risposta API
-# (extra="allow" evita errori su campi non mappati)
+# Shared config for API response models
+# (extra="allow" prevents errors on unmapped fields)
 # ---------------------------------------------------------------------------
 
 _api = ConfigDict(extra="allow")
 
 
 # ===========================================================================
-# ENUMERAZIONI
+# ENUMERATIONS
 # ===========================================================================
 
 
@@ -52,7 +52,7 @@ class FieldType(str, Enum):
 
 
 # ===========================================================================
-# FORM — primitivi per la costruzione
+# FORM — building primitives
 # ===========================================================================
 
 
@@ -71,7 +71,7 @@ class MatrixColumn(BaseModel):
     label: str
 
 
-# --- Properties per tipo di campo ---
+# --- Properties by field type ---
 
 class MultipleChoiceProperties(BaseModel):
     choices: list[Choice]
@@ -98,7 +98,7 @@ class ShortTextProperties(BaseModel):
 
 
 class StatementProperties(BaseModel):
-    button_text: str = "Continua"
+    button_text: str = "Continue"
     hide_marks: bool = True
 
 
@@ -109,7 +109,7 @@ class DropdownProperties(BaseModel):
 
 
 class RatingProperties(BaseModel):
-    shape: str | None = None   # "star", "heart", "circle", …
+    shape: str | None = None   # "star", "heart", "circle", ...
     steps: int | None = None   # 3–10
 
 
@@ -153,11 +153,11 @@ class SurveyField(BaseModel):
         return self.model_dump(exclude_none=True, mode="json")
 
 
-# --- Schermate ---
+# --- Screens ---
 
 class ScreenProperties(BaseModel):
     show_button: bool = True
-    button_text: str = "Avanti"
+    button_text: str = "Next"
 
 
 class WelcomeScreen(BaseModel):
@@ -169,7 +169,7 @@ class WelcomeScreen(BaseModel):
 class ThankyouScreenProperties(BaseModel):
     show_button: bool | None = None
     button_text: str | None = None
-    redirect_url: str | None = None   # usato con type="url_redirect"
+    redirect_url: str | None = None   # used with type="url_redirect"
 
 
 class ThankyouScreen(BaseModel):
@@ -187,7 +187,7 @@ class ConditionVar(BaseModel):
 
 
 class Condition(BaseModel):
-    op: str   # "is", "lower_equal_than", "always", …
+    op: str   # "is", "lower_equal_than", "always", ...
     vars: list[ConditionVar]
 
 
@@ -211,9 +211,9 @@ class LogicRule(BaseModel):
 
 class Form(BaseModel):
     title: str
-    language: str | None = None        # non accettato dall'API Create POST
-    hidden: list[str] = Field(default_factory=list)   # nomi degli hidden fields, es. ["sid", "source"]
-    variables: dict[str, Any] | None = None            # variabili/score, es. {"score": 0, "price": 0}
+    language: str | None = None        # not accepted by the Create POST API
+    hidden: list[str] = Field(default_factory=list)   # hidden field names, e.g. ["sid", "source"]
+    variables: dict[str, Any] | None = None            # variables/score, e.g. {"score": 0, "price": 0}
     welcome_screens: list[WelcomeScreen] = Field(default_factory=list)
     thankyou_screens: list[ThankyouScreen] = Field(default_factory=list)
     fields: list[SurveyField] = Field(default_factory=list)
@@ -237,12 +237,12 @@ class Account(BaseModel):
 
 
 # ===========================================================================
-# FORMS — modelli di risposta
+# FORMS — response models
 # ===========================================================================
 
 
 class FormSummary(BaseModel):
-    """Elemento restituito da GET /forms (lista)."""
+    """Single item returned by GET /forms (list)."""
     model_config = _api
 
     id: str
@@ -294,7 +294,7 @@ class Theme(BaseModel):
 
 
 class ThemeCreate(BaseModel):
-    """Payload per creare/aggiornare un tema."""
+    """Payload for creating or updating a theme."""
     name: str
     font: str | None = None
     colors: ThemeColors | None = None
@@ -333,10 +333,10 @@ class Image(BaseModel):
 
 
 class ImageCreate(BaseModel):
-    """Payload per caricare una nuova immagine (immagine in base64)."""
+    """Payload for uploading a new image (base64-encoded)."""
     file_name: str
     image: str       # base64-encoded
-    media_type: str  # "image/jpeg" | "image/png" | "image/gif" | …
+    media_type: str  # "image/jpeg" | "image/png" | "image/gif" | ...
 
     def to_api(self) -> dict:
         return self.model_dump(mode="json")
@@ -414,7 +414,7 @@ class Answer(BaseModel):
     phone_number: str | None = None
 
     def value(self) -> Any:
-        """Restituisce il valore leggibile indipendentemente dal tipo."""
+        """Returns the human-readable value regardless of the answer type."""
         if self.type == "choice":
             return self.choice.get("label") if self.choice else None
         if self.type == "choices":
@@ -447,7 +447,7 @@ class FormResponse(BaseModel):
     answers: list[Answer] = Field(default_factory=list)
 
     def answers_by_ref(self) -> dict[str, Any]:
-        """Mapping ref → valore per accesso rapido alle risposte."""
+        """Returns a ref → value mapping for quick access to answers."""
         return {
             a.field.ref: a.value()
             for a in self.answers
@@ -483,7 +483,7 @@ class Webhook(BaseModel):
 
 
 class WebhookUpsert(BaseModel):
-    """Payload per creare o aggiornare un webhook."""
+    """Payload for creating or updating a webhook."""
     url: str
     enabled: bool = True
     secret: str | None = None
@@ -510,5 +510,5 @@ class TranslationStatus(BaseModel):
     model_config = _api
 
     language: str
-    status: str          # "completed" | "in_progress" | …
+    status: str          # "completed" | "in_progress" | ...
     percentage: int | None = None
