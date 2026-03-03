@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "typeform": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/dscovr/typeform-mcp",
+        "typeform-mcp"
+      ],
+      "env": {
+        "TYPEFORM_TOKEN": "tfp_IL_TUO_TOKEN_PERSONALE"
+      }
+    }
+  }
+}
