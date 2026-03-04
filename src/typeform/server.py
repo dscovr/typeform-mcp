@@ -257,16 +257,21 @@ def typeform_update_form(form_id: str, form_definition: dict) -> str:
 
 @mcp.tool()
 @_tool
-def typeform_patch_form(form_id: str, patch: dict) -> str:
+def typeform_patch_form(form_id: str, operations: list[dict]) -> str:
     """
-    Partially updates a Typeform form (PATCH).
-    Only send the fields you want to change.
+    Partially updates a Typeform form using JSON Patch (RFC 6902).
 
     Args:
-        form_id: Form ID.
-        patch:   Object with only the fields to change, e.g. {"title": "New title"}.
+        operations: Array of JSON Patch operations. Each operation has:
+            - "op":    "replace" | "add" | "remove"
+            - "path":  JSON Pointer to the field (e.g. "/title", "/settings/is_public")
+            - "value": New value (omit for "remove")
+
+        Examples:
+            [{"op": "replace", "path": "/title", "value": "New title"}]
+            [{"op": "replace", "path": "/settings/is_public", "value": false}]
     """
-    return _ok(_client().patch_form(form_id, patch))
+    return _ok(_client().patch_form(form_id, operations))
 
 
 @mcp.tool()

@@ -196,12 +196,13 @@ def test_update_form_error_raises():
 
 def test_patch_form_success():
     client = _make_client()
+    ops = [{"op": "replace", "path": "/title", "value": "Patched"}]
     mock = _patch_session(client, _mock_response(200, {"id": "form123", "title": "Patched"}))
 
-    result = client.patch_form("form123", {"title": "Patched"})
+    result = client.patch_form("form123", ops)
 
     assert result["title"] == "Patched"
-    assert mock.call_args[1]["json"] == {"title": "Patched"}
+    assert mock.call_args[1]["json"] == ops  # must be a list, not a dict
 
 
 # ---------------------------------------------------------------------------

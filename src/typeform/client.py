@@ -206,9 +206,13 @@ class TypeformClient:
         resp = self._request("PUT", f"/forms/{form_id}", json=form_definition)
         return resp.json()
 
-    def patch_form(self, form_id: str, patch: dict) -> dict:
-        """PATCH /forms/{form_id} — partially update a form."""
-        resp = self._request("PATCH", f"/forms/{form_id}", json=patch)
+    def patch_form(self, form_id: str, operations: list[dict]) -> dict:
+        """PATCH /forms/{form_id} — partially update a form via JSON Patch (RFC 6902).
+
+        operations is an array of patch operations, e.g.:
+            [{"op": "replace", "path": "/title", "value": "New title"}]
+        """
+        resp = self._request("PATCH", f"/forms/{form_id}", json=operations)
         return resp.json()
 
     def delete_form(self, form_id: str) -> None:
