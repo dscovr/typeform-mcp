@@ -75,6 +75,7 @@ class MatrixColumn(BaseModel):
 
 class MultipleChoiceProperties(BaseModel):
     choices: list[Choice]
+    allow_multiple_selection: bool | None = None   # singular — API rejects "allow_multiple_selections"
     allow_other_choice: bool | None = None
 
 
@@ -115,8 +116,8 @@ class RatingProperties(BaseModel):
 
 class PictureChoiceProperties(BaseModel):
     choices: list[dict]        # {ref, label, attachment}
+    allow_multiple_selection: bool | None = None   # singular
     allow_other_choice: bool | None = None
-    allow_multiple_selections: bool | None = None
 
 
 Properties = Union[
