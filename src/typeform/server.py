@@ -261,15 +261,23 @@ def typeform_patch_form(form_id: str, operations: list[dict]) -> str:
     """
     Partially updates a Typeform form using JSON Patch (RFC 6902).
 
+    NOTE: The Typeform API only allows patching top-level form properties.
+    To modify fields, logic, or validations use typeform_update_form (PUT) instead.
+
     Args:
         operations: Array of JSON Patch operations. Each operation has:
             - "op":    "replace" | "add" | "remove"
-            - "path":  JSON Pointer to the field (e.g. "/title", "/settings/is_public")
-            - "value": New value (omit for "remove")
+            - "path":  one of the allowed paths (see below)
+            - "value": new value (omit for "remove")
 
-        Examples:
+        Allowed paths:
+            /title  /theme  /workspace  /cui_settings
+            /settings/is_public  /settings/facebook_pixel
+            /settings/google_analytics  /settings/google_tag_manager
+            /settings/meta  /settings/meta/image
+
+        Example:
             [{"op": "replace", "path": "/title", "value": "New title"}]
-            [{"op": "replace", "path": "/settings/is_public", "value": false}]
     """
     return _ok(_client().patch_form(form_id, operations))
 
