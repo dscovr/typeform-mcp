@@ -12,7 +12,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Literal, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 # ---------------------------------------------------------------------------
@@ -446,6 +446,11 @@ class FormResponse(BaseModel):
     hidden: dict[str, Any] | None = None
     calculated: dict[str, Any] | None = None
     answers: list[Answer] = Field(default_factory=list)
+
+    @field_validator("answers", mode="before")
+    @classmethod
+    def _coerce_none_answers(cls, v: Any) -> list:
+        return v if v is not None else []
 
     def answers_by_ref(self) -> dict[str, Any]:
         """Returns a ref → value mapping for quick access to answers."""
