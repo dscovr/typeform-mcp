@@ -188,7 +188,8 @@ class TypeformClient:
 
     def create_form_raw(self, form_definition: dict) -> dict:
         """POST /forms — create a new form from a raw payload (dict)."""
-        resp = self._request("POST", "/forms", json=form_definition)
+        payload = {"type": "form", **form_definition}
+        resp = self._request("POST", "/forms", json=payload)
         return resp.json()
 
     def get_form(self, form_id: str) -> dict:
@@ -203,7 +204,8 @@ class TypeformClient:
 
     def update_form_raw(self, form_id: str, form_definition: dict) -> dict:
         """PUT /forms/{form_id} — replace the form from a raw payload (dict)."""
-        resp = self._request("PUT", f"/forms/{form_id}", json=form_definition)
+        payload = {"type": "form", **form_definition}
+        resp = self._request("PUT", f"/forms/{form_id}", json=payload)
         return resp.json()
 
     def patch_form(self, form_id: str, operations: list[dict]) -> dict:
